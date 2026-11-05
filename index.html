@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Сушкоф и Пицца</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --brand:#f0451f; --dark:#3b424d; --bg:#fff; --card:#f5f5f6; --chip:#f1f1f2;
+  --text:#1c1f24; --muted:#8a9099; --radius:18px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);padding-bottom:90px}
+button{font:inherit;border:0;cursor:pointer}
+header{position:sticky;top:0;z-index:20;background:#fff;padding:10px 12px 0}
+.top{display:flex;align-items:center;gap:8px}
+.logo{font-weight:900;font-size:17px;line-height:1;letter-spacing:-.5px}
+.logo span{color:var(--brand)}
+.city{margin-left:auto;font-size:13px;font-weight:600;color:var(--dark)}
+.modes{display:flex;gap:6px;margin:10px 0}
+.mode{flex:1;padding:9px 0;border-radius:12px;background:var(--chip);font-weight:700;font-size:14px;color:var(--text)}
+.mode.on{background:var(--dark);color:#fff}
+.mode small{display:block;font-weight:600;font-size:10px;color:var(--brand)}
+.mode.on small{color:#ffb4a2}
+.cats{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px;scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cat{flex:none;padding:10px 16px;border-radius:14px;background:var(--chip);font-weight:700;font-size:14px}
+.cat.on{background:var(--dark);color:#fff}
+.search{display:flex;gap:6px;margin-bottom:8px}
+.search input{flex:1;border:0;background:var(--chip);border-radius:12px;padding:10px 12px;font:inherit;outline:none}
+.banner{margin:12px;border-radius:22px;padding:22px 20px;color:#fff;min-height:140px;position:relative;overflow:hidden;
+  background:radial-gradient(circle at 85% 30%,#b3140e 0,#7a0b0b 70%)}
+.banner h2{margin:0;font-size:26px;line-height:1.05;font-weight:900;max-width:60%}
+.banner p{margin:8px 0 0;font-size:13px;opacity:.85}
+.banner .em{position:absolute;right:10px;top:8px;font-size:84px;line-height:1}
+section{padding:6px 12px 0}
+section h2{font-size:26px;font-weight:900;margin:18px 0 12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.item{background:var(--card);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+.pic{aspect-ratio:1/1;background:#f4979b;display:flex;align-items:center;justify-content:center;font-size:64px;position:relative}
+.pic img{width:100%;height:100%;object-fit:cover}
+.badge{position:absolute;top:8px;right:8px;background:#fff;color:var(--brand);font-weight:800;font-size:11px;padding:4px 8px;border-radius:10px}
+.body{padding:10px;display:flex;flex-direction:column;gap:4px;flex:1}
+.name{font-weight:800;font-size:14px;line-height:1.2}
+.desc{font-size:11px;color:var(--muted);line-height:1.3;flex:1}
+.bottom{display:flex;align-items:center;justify-content:space-between;margin-top:6px;gap:6px}
+.price{font-weight:900;font-size:15px}
+.price s{display:block;font-size:11px;color:var(--muted);font-weight:600}
+.add{background:var(--brand);color:#fff;font-weight:800;border-radius:12px;padding:9px 14px;font-size:13px}
+.qty{display:flex;align-items:center;gap:2px;background:#fff;border-radius:12px}
+.qty button{width:32px;height:32px;background:none;font-size:18px;font-weight:800;color:var(--brand)}
+.qty b{min-width:18px;text-align:center;font-size:14px}
+/* корзина */
+#cartbar{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:30;display:none}
+#cartbar button{width:100%;background:var(--brand);color:#fff;font-weight:800;font-size:16px;padding:15px;border-radius:16px;display:flex;justify-content:space-between;box-shadow:0 6px 20px rgba(240,69,31,.4)}
+#sheet{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.45);display:none;align-items:flex-end}
+#sheet.open{display:flex}
+.panel{background:#fff;width:100%;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom))}
+.panel h3{margin:0 0 12px;font-size:22px;font-weight:900;display:flex;justify-content:space-between;align-items:center}
+.panel h3 button{background:var(--chip);width:34px;height:34px;border-radius:50%;font-size:16px}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eee}
+.row .e{font-size:30px}
+.row .n{flex:1;font-weight:700;font-size:14px}
+.row .n small{display:block;color:var(--muted);font-weight:600}
+.field{width:100%;border:0;background:var(--chip);border-radius:12px;padding:12px;font:inherit;margin-top:8px;outline:none}
+.sum{display:flex;justify-content:space-between;margin-top:8px;font-size:14px;color:var(--muted)}
+.sum.total{color:var(--text);font-weight:900;font-size:18px;margin-top:12px}
+.warn{color:var(--brand);font-size:12px;margin-top:6px;font-weight:600}
+.submit{width:100%;margin-top:14px;background:var(--brand);color:#fff;font-weight:800;font-size:16px;padding:15px;border-radius:16px}
+.submit:disabled{background:#c9c9cc}
+.empty{text-align:center;color:var(--muted);padding:40px 0}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="logo">СУШКОФ<br><span>И ПИЦЦА</span></div>
+    <div class="city">📍 <span id="city"></span></div>
+  </div>
+  <div class="modes">
+    <button class="mode on" data-mode="delivery">Доставка</button>
+    <button class="mode" data-mode="pickup">Самовывоз <small>−15%</small></button>
+  </div>
+  <div class="search"><input id="q" type="search" placeholder="🔍 Поиск по меню"></div>
+  <div class="cats" id="cats"></div>
+</header>
+
+<div class="banner" id="banner">
+  <h2>Сеты по любви, острота по вкусу</h2>
+  <p>Сеты со скидками</p>
+  <div class="em">🍣</div>
+</div>
+
+<main id="menu"></main>
+
+<div id="cartbar"><button id="openCart"><span id="cartCount"></span><span id="cartSum"></span></button></div>
+
+<div id="sheet"><div class="panel" id="panel"></div></div>
+
+<script src="menu.js"></script>
+<script>
+const tg = window.Telegram && Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); try{ tg.setHeaderColor('#ffffff'); }catch(e){} }
+
+const { MENU, CONFIG } = window;
+const fmt = n => Math.round(n).toLocaleString('ru-RU') + ' ₽';
+const byId = {}; MENU.forEach(c => c.items.forEach(i => byId[i.id] = i));
+
+let cart = {};  try { cart = JSON.parse(localStorage.getItem('cart') || '{}'); } catch(e){}
+let mode = 'delivery';
+let form = { address:'', phone:'', comment:'' };
+try { form = Object.assign(form, JSON.parse(localStorage.getItem('form') || '{}')); } catch(e){}
+
+const $ = s => document.querySelector(s);
+$('#city').textContent = CONFIG.city;
+
+/* ---------- меню ---------- */
+function price(i){ return mode==='pickup' ? i.price*(1-CONFIG.pickupDiscount) : i.price; }
+
+function itemHTML(i){
+  const q = cart[i.id] || 0;
+  const old = mode==='pickup' ? `<s>${fmt(i.price)}</s>` : '';
+  return `<div class="item" data-id="${i.id}">
+    <div class="pic">${i.img ? `<img src="${i.img}" alt="">` : i.emoji}${mode==='pickup'?'<span class="badge">−15%</span>':''}</div>
+    <div class="body">
+      <div class="name">${i.name}</div>
+      <div class="desc">${i.desc}<br>${i.weight}</div>
+      <div class="bottom"><div class="price">${old}${fmt(price(i))}</div>
+      ${q ? `<div class="qty"><button data-d="-1">−</button><b>${q}</b><button data-d="1">+</button></div>`
+          : `<button class="add" data-d="1">В корзину</button>`}</div>
+    </div></div>`;
+}
+
+function renderMenu(){
+  const f = $('#q').value.trim().toLowerCase();
+  $('#menu').innerHTML = MENU.map(c => {
+    const items = c.items.filter(i => !f || (i.name+i.desc).toLowerCase().includes(f));
+    return items.length ? `<section id="cat-${c.id}"><h2>${c.name}</h2><div class="grid">${items.map(itemHTML).join('')}</div></section>` : '';
+  }).join('') || '<div class="empty">Ничего не найдено</div>';
+  $('#banner').classList.toggle('hidden', !!f);
+}
+
+$('#cats').innerHTML = MENU.map((c,k) => `<button class="cat ${k?'':'on'}" data-c="${c.id}">${c.name}</button>`).join('');
+$('#cats').addEventListener('click', e => {
+  const b = e.target.closest('.cat'); if(!b) return;
+  $('#q').value=''; renderMenu();
+  const el = document.getElementById('cat-'+b.dataset.c);
+  if (el) window.scrollTo({ top: el.offsetTop - $('header').offsetHeight + 4, behavior:'smooth' });
+});
+window.addEventListener('scroll', () => {
+  const y = window.scrollY + $('header').offsetHeight + 20;
+  let cur = MENU[0].id;
+  MENU.forEach(c => { const el = document.getElementById('cat-'+c.id); if (el && el.offsetTop <= y) cur = c.id; });
+  document.querySelectorAll('.cat').forEach(b => {
+    const on = b.dataset.c === cur;
+    if (on && !b.classList.contains('on')) b.scrollIntoView({inline:'center', block:'nearest'});
+    b.classList.toggle('on', on);
+  });
+}, {passive:true});
+$('#q').addEventListener('input', renderMenu);
+
+document.querySelectorAll('.mode').forEach(b => b.onclick = () => {
+  mode = b.dataset.mode;
+  document.querySelectorAll('.mode').forEach(x => x.classList.toggle('on', x===b));
+  renderMenu(); updateCart(); if ($('#sheet').classList.contains('open')) renderCart();
+});
+
+/* ---------- корзина ---------- */
+function change(id, d){
+  cart[id] = (cart[id]||0) + d;
+  if (cart[id] <= 0) delete cart[id];
+  localStorage.setItem('cart', JSON.stringify(cart));
+  if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+}
+$('#menu').addEventListener('click', e => {
+  const b = e.target.closest('[data-d]'); if(!b) return;
+  change(b.closest('.item').dataset.id, +b.dataset.d);
+  const y = window.scrollY; renderMenu(); window.scrollTo(0,y); updateCart();
+});
+
+function totals(){
+  let sum = 0, cnt = 0;
+  for (const id in cart){ sum += price(byId[id])*cart[id]; cnt += cart[id]; }
+  const fee = (mode==='delivery' && sum>0) ? CONFIG.deliveryFee : 0;
+  return { sum, cnt, fee, total: sum+fee };
+}
+
+function updateCart(){
+  const t = totals();
+  $('#cartbar').style.display = t.cnt && !$('#sheet').classList.contains('open') ? 'block' : 'none';
+  $('#cartCount').textContent = '🛒 Корзина · ' + t.cnt;
+  $('#cartSum').textContent = fmt(t.sum);
+}
+$('#openCart').onclick = () => openCart();
+
+function openCart(){ $('#sheet').classList.add('open'); renderCart(); updateCart(); }
+function closeCart(){ $('#sheet').classList.remove('open'); updateMain(); updateCart(); }
+$('#sheet').addEventListener('click', e => { if (e.target.id==='sheet') closeCart(); });
+
+function renderCart(){
+  const t = totals();
+  const ids = Object.keys(cart);
+  const rows = ids.map(id => { const i = byId[id]; return `<div class="row" data-id="${id}">
+    <div class="e">${i.emoji}</div>
+    <div class="n">${i.name}<small>${fmt(price(i))}</small></div>
+    <div class="qty"><button data-d="-1">−</button><b>${cart[id]}</b><button data-d="1">+</button></div></div>`; }).join('');
+  const minWarn = mode==='delivery' && t.sum && t.sum < CONFIG.minDelivery
+    ? `<div class="warn">Минимальная сумма доставки — ${fmt(CONFIG.minDelivery)}. Добавьте ещё на ${fmt(CONFIG.minDelivery-t.sum)}</div>` : '';
+  $('#panel').innerHTML = `<h3>Корзина <button id="x">✕</button></h3>` + (ids.length ? `
+    ${rows}
+    <input class="field ${mode==='pickup'?'hidden':''}" id="addr" placeholder="Адрес доставки (улица, дом, кв.)" value="${esc(form.address)}">
+    <input class="field" id="phone" type="tel" placeholder="Телефон" value="${esc(form.phone)}">
+    <input class="field" id="comm" placeholder="Комментарий к заказу" value="${esc(form.comment)}">
+    <div class="sum"><span>Товары</span><span>${fmt(t.sum)}</span></div>
+    ${mode==='delivery' ? `<div class="sum"><span>Доставка</span><span>${t.fee?fmt(t.fee):'бесплатно'}</span></div>`
+                        : `<div class="sum"><span>Самовывоз</span><span>скидка 15% применена</span></div>`}
+    <div class="sum total"><span>Итого</span><span>${fmt(t.total)}</span></div>
+    ${minWarn}
+    ${tg && tg.initData ? '' : '<button class="submit" id="send">Оформить заказ</button>'}
+  ` : '<div class="empty">Корзина пуста</div>');
+  $('#x').onclick = closeCart;
+  if (!ids.length) return;
+  $('#panel').onclick = e => {
+    const b = e.target.closest('[data-d]'); if(!b) return;
+    change(b.closest('.row').dataset.id, +b.dataset.d);
+    if (!Object.keys(cart).length) closeCart(); else renderCart();
+    renderMenu(); updateCart();
+  };
+  const bind = (sel, key) => $(sel).oninput = e => { form[key] = e.target.value; localStorage.setItem('form', JSON.stringify(form)); updateMain(); };
+  if (mode==='delivery') bind('#addr','address'); bind('#phone','phone'); bind('#comm','comment');
+  const s = $('#send'); if (s) s.onclick = submit;
+  updateMain();
+}
+function esc(s){ return String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function valid(){
+  const t = totals();
+  if (!t.cnt) return false;
+  if (mode==='delivery' && (t.sum < CONFIG.minDelivery || form.address.trim().length < 5)) return false;
+  return form.phone.replace(/\D/g,'').length >= 10;
+}
+
+function updateMain(){
+  const open = $('#sheet').classList.contains('open');
+  const s = $('#send'); if (s) s.disabled = !valid();
+  if (!tg || !tg.MainButton) return;
+  if (open && Object.keys(cart).length){
+    tg.MainButton.setParams({ text: 'Оформить заказ · ' + fmt(totals().total), color:'#f0451f', text_color:'#ffffff', is_visible:true, is_active:valid() });
+  } else tg.MainButton.hide();
+}
+if (tg) tg.MainButton.onClick(submit);
+
+function submit(){
+  if (!valid()) return;
+  const t = totals();
+  const order = {
+    type: mode, city: CONFIG.city,
+    address: mode==='delivery' ? form.address.trim() : null,
+    phone: form.phone.trim(), comment: form.comment.trim(),
+    items: Object.keys(cart).map(id => ({ id:+id, name:byId[id].name, qty:cart[id], price:Math.round(price(byId[id])) })),
+    sum: Math.round(t.sum), delivery: t.fee, total: Math.round(t.total)
+  };
+  if (tg && tg.initData) { tg.sendData(JSON.stringify(order)); }   // бот получит web_app_data и закроет Mini App
+  else { alert('Тест вне Telegram. Заказ:\n' + JSON.stringify(order, null, 2)); console.log(order); }
+}
+
+if (tg) tg.BackButton.onClick(closeCart);
+const _open = openCart; openCart = function(){ _open(); if (tg) tg.BackButton.show(); };
+const _close = closeCart; closeCart = function(){ _close(); if (tg) tg.BackButton.hide(); };
+
+renderMenu(); updateCart();
+</script>
+</body>
+</html>
