@@ -1,6 +1,5 @@
 """Минимальный бот: кнопка открытия Mini App + приём заказа.
 pip install python-telegram-bot==21.*
-export BOT_TOKEN=9139613648:AAF4P5N9O954JTcF_SG7Sg_dCTlLFS4BWl8  WEBAPP_URL=https://ваш-домен/  ADMIN_CHAT_ID=...
 """
 import json, os
 from telegram import Update, WebAppInfo, ReplyKeyboardMarkup, KeyboardButton
